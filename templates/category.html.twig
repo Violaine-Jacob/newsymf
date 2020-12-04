@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+    {% block body %}
+
+    <div>
+        <div class="container">
+
+            <div class = "row" style="border:1px solid black" >
+
+                <div class="col" style="border:1px solid red">
+                </div>
+
+                <div class="col" style="border:1px solid red">
+                    {% for item in category %}
+                    {{item.nameCategory}} / {{item.description}} / {{item.slug}} <br>
+                    <br>
+                    <br>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+ 

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\CategoryRepository;
 use App\Repository\ProductRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -25,6 +26,17 @@ class TestController extends AbstractController
         $products = $productRepository->findAll();
  
         return $this->render("test.html.twig", ['products' => $products]);
+       // return $this->render("test.html.twig", ['products' => $products, 'category' => []]);
     }
 
+    /**
+     * http://127.0.0.1:8000/category
+     * @Route("/category",name="category")
+     *  */
+    public function category(CategoryRepository $categoryRepository )
+    {
+        $category = $categoryRepository->findAll();
+ 
+        return $this->render("category.html.twig", ['category' => $category]);
+    }
 }
