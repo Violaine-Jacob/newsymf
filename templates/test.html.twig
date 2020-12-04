@@ -2,8 +2,23 @@
 
     {% block body %}
 
-    {% for item in tab %}
-    {{ item }}
-    {% endfor %}
+    <div>
+        <div class="container">
+
+            <div class = "row" style="border:1px solid black" >
+            <div class="col" style="border:1px solid red">
+                {#['count'=>dd($count)]#}
+                {% for item in products %}
+                {{item.name}} / {{item.price}} / {{item.slug}} <br>
+                <br>
+                <br>
+                {% endfor %}
+
+            </div>
+
+            <div class="col" style="border:1px solid red">
+            </div>
+        </div>
+ 
 
     {% endblock %}
