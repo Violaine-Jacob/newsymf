@@ -2,14 +2,16 @@
 
 namespace App\Controller;
 
-use App\Repository\CategoryRepository;
+use App\Entity\Category;
 use App\Repository\ProductRepository;
+use App\Repository\CategoryRepository;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class TestController extends AbstractController
 {
+
     /**
      * @Route("/",name="index")
      *  */
@@ -21,22 +23,21 @@ class TestController extends AbstractController
     /**
      * @Route("/test",name="test")
      *  */
-    public function test(ProductRepository $productRepository )
+    public function test(ProductRepository $productRepository)
     {
         $products = $productRepository->findAll();
- 
-        return $this->render("test.html.twig", ['products' => $products]);
-       // return $this->render("test.html.twig", ['products' => $products, 'category' => []]);
+
+        return $this->render(
+            'test.html.twig',
+            ['products' => $products]
+        );
     }
 
     /**
-     * http://127.0.0.1:8000/category
-     * @Route("/category",name="category")
+     * @Route("/success",name="success")
      *  */
-    public function category(CategoryRepository $categoryRepository )
+    public function success()
     {
-        $category = $categoryRepository->findAll();
- 
-        return $this->render("category.html.twig", ['category' => $category]);
+        return $this->render('success.html.twig');
     }
 }

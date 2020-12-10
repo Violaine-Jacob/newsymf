@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\ProductRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -30,21 +28,15 @@ class Product
     private $price;
 
     /**
-     * Permet de creer une URL en minuscule, mots separés par -
      * @ORM\Column(type="string", length=255)
      */
     private $slug;
 
+
     /**
-     * @ORM\OneToMany(targetEntity=Category::class, mappedBy="product")
+     * @ORM\ManyToOne(targetEntity=Category::class, inversedBy="products")
      */
-    private $category;
-
-    public function __construct()
-    {
-        $this->category = new ArrayCollection();
-    }
-
+    private $Category;
 
     public function getId(): ?int
     {
@@ -87,32 +79,14 @@ class Product
         return $this;
     }
 
-    /**
-     * @return Collection|Category[]
-     */
-    public function getCategories(): Collection
+    public function getCategory(): ?Category
     {
-        return $this->category;
+        return $this->Category;
     }
 
-    public function addCategory(Category $category): self
+    public function setCategory(?Category $Category): self
     {
-        if (!$this->categories->contains($category)) {
-            $this->categories[] = $category;
-            $category->setProduct($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCategory(Category $category): self
-    {
-        if ($this->categories->removeElement($category)) {
-            // set the owning side to null (unless already changed)
-            if ($category->getProduct() === $this) {
-                $category->setProduct(null);
-            }
-        }
+        $this->Category = $Category;
 
         return $this;
     }
