@@ -38,11 +38,11 @@ class Product
     /**
      * @ORM\OneToMany(targetEntity=Category::class, mappedBy="product")
      */
-    private $categories;
+    private $category;
 
     public function __construct()
     {
-        $this->categories = new ArrayCollection();
+        $this->category = new ArrayCollection();
     }
 
 
@@ -92,7 +92,7 @@ class Product
      */
     public function getCategories(): Collection
     {
-        return $this->categories;
+        return $this->category;
     }
 
     public function addCategory(Category $category): self
