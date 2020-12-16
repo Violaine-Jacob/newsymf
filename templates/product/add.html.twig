@@ -6,8 +6,41 @@
 
 <div class="container">
 
-    {{form(form)}}
 
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+    {{ form_row(form._token) }}
+
+    {{ form_label(form.name,'nom produit') }}
+    {{ form_widget(form.name,{'attr':{'maxlength':'50'}}) }}
+
+    {{ form_label(form.price,'Prix produit') }}
+    {{ form_widget(form.price,{'attr':{'maxlength':'50'}}) }}
+
+    {{ form_label(form.img,'Image') }}
+    {{ form_widget(form.img,{'attr':{'maxlength':'255'}}) }}
+
+    {{ form_label(form.category,'Catégorie') }}
+    {{ form_widget(form.category)}}
+
+    {{ form_label(form.save,'Ajouter produit') }}
+    {{ form_widget(form.save) }}
+
+    {{ form_end(form, {'render_rest': false}) }}
 
 </div>
+
+<script>
+    //permet de recup le nom du fichier
+    document.addEventListener("DOMContentLoaded", function () {
+        var fichierRecto = document.querySelector('#product_form_img')
+        var labelRecto = fichierRecto.nextElementSibling
+    //remplace le placeholder par le nom du fichier
+        fichierRecto.addEventListener('change', function (e) {
+            const fileName = fichierRecto.value;
+            labelRecto.innerHTML = fileName;
+        })
+    });
+</script>
+
 {% endblock %}

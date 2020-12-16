@@ -3,80 +3,63 @@
 namespace App\Controller;
 
 use App\Entity\Product;
-use App\Entity\Category;
 use App\Form\ProductFormType;
-use App\Repository\ProductRepository;
-
-use App\Repository\CategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class ProductController extends AbstractController
 {
     /**
      * @Route("/detailProduit/{id}", name="detailProduit")
      */
-    public function index(ProductRepository $productRepository): Response
+    public function index(Product $product): Response
     {
-
-        $listeProduit = $productRepository->findAll();
-
-        return $this->render('product/index.html.twig', [
-            'listeProduit' => $listeProduit,
+        return $this->render('product/detailProduit.html.twig', [
+            'product' => $product,
         ]);
     }
-
-
 
     /**
      * @Route("/product/add",name="ajoutProduit")
      */
-    public function addProduct(Request $request, EntityManagerInterface $em): Response
+    public function addProduct(KernelInterface $appKernel, Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
-        $builder = $this->createFormBuilder();
-        $builder->add('name', TextType::class)
-            ->add('price', IntegerType::class)
-            ->add('slug', TextType::class)
-            ->add(
-                'category',
-                EntityType::class,
-                [
-                    'class' => Category::class,
-                    'choice_label' => 'name',
-                    'placeholder' => 'Choisir une catégorie',
-                    'label' => 'Catégorie',
-                ]
-            )
-            ->add(
-                'save',
-                SubmitType::class,
-                ['label' => 'Ajouter Produit']
-            );
-
-        $form = $builder->getForm();
+        $path  = $appKernel->getProjectDir() . '/public';
+        $path = $this-> getParameter('app.dir.public') . '/img';
+        $product = new Product;
+        $form = $this->createForm(ProductFormType::class, $product);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
-            $product = new Product;
-            $product->setName($data['name'])
-                ->setPrice($data['price'])
-                ->setSlug($data['slug'])
-                ->setCategory($data['category']);
+
+            $product->setSlug($slugger->slug($product->getName()));
+
+            $file = $form['img']->getData();
+
+            if  ($file) {
+                //recup. le nom du fichier sans extension
+                $originalFileName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $newFileName = $originalFileName . '-' . uniqid() . '.' . $file->guessExtension();
+                //set nom dans la proprieté img
+                $product->setImg($newFileName);
+
+                //Deplacer le fichier dans le repertoire public + sous repertoire
+                try{
+                    
+                    $file->move($path, $newFileName);
+                } catch (FileException $e){
+                    echo $e ->getMessage();
+                }
+            }
 
             $em->persist($product);
-
-
-
             $em->flush();
 
             return $this->redirectToRoute('success');
@@ -87,30 +70,55 @@ class ProductController extends AbstractController
         ]);
     }
 
-
-
     /**
      * @Route("/product/edit/{id}",name="editProduit")
      */
     public function editProduct(Request $request, EntityManagerInterface $em, $id): Response
     {
-        $product = new Product;
+        $path = $this-> getParameter('app.dir.public') . '/img';
+
         $product = $em->getRepository(Product::class)->find($id);
-
-        $form = $this->createForm(FormType::class, $product);
-
+        $form = $this->createForm(ProductFormType::class, $product);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $product = $form->getData();
-            $em->persist($product);
-            $em->flush();
 
-            return $this->redirectToRoute('success');
+            $file = $form['img']->getData();
+
+            if  ($file) {
+                //recup. le nom du fichier sans extension
+                $originalFileName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $newFileName = $originalFileName . '-' . uniqid() . '.' . $file->guessExtension();
+                //set nom dans la proprieté img
+                $product->setImg($newFileName);
+
+                //Deplacer le fichier dans le repertoire public + sous repertoire
+                try{
+                    
+                    $file->move($path, $newFileName);
+                } catch (FileException $e){
+                    echo $e ->getMessage();
+                }
+            }
         }
 
         return $this->render('product/edit.html.twig', [
             'form' => $form->createView(),
         ]);
+    }
+
+    /**
+     * @Route("/product/delete/{id}",name="deleteProduit")
+     */
+    public function deleteProduct(Product $product, EntityManagerInterface $em)
+    {
+        // public function deleteProduct(ProductRepository $productRepository, $id, EntityManagerInterface $em)
+
+        //$product = $productRepository->find($id);
+        // paramConverter
+        $em->remove($product);
+        $em->flush();
+
+        return $this->redirectToRoute('success');
     }
 }
