@@ -5,6 +5,7 @@
         <span class="navbar-toggler-icon"></span>
     </button>
 
+
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
@@ -19,6 +20,21 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{path('ajoutCategory')}}">Ajout Categorie</a>
             </li>
+            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success" type="submit">Search</button>
         </ul>
+
+            {% if app.user %}
+            <div class="d-flex">
+                <button class="btn btn-outline-success" type="submit"> <a href="{{ path('app_logout') }}">Déconnection</button>
+            </div>
+            {% endif %}
+            
+            {% if app.user is null %}
+            <div class="d-flex">
+                <button class="btn btn-outline-success" type="submit"> <a href="{{ path('app_login') }}">Connection</button>
+            </div>
+            {% endif %}
+        
     </div>
 </nav>
