@@ -15,23 +15,30 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class ProductController extends AbstractController
 {
+
+
     /**
-     * @Route("/detailProduit/{id}", name="detailProduit")
+     * liste le produits d'une catégorie
+     * @Route("/admin/product/detail/{id}", name="detailProduit")
      */
-    public function index(Product $product): Response
+    public function categoryProductList(Product $product): Response
     {
         return $this->render('product/detailProduit.html.twig', [
             'product' => $product,
         ]);
     }
 
+
+
     /**
-     * @Route("/product/add",name="ajoutProduit")
+     * @Route("/admin/product/add",name="ajoutProduit")
      */
     public function addProduct(KernelInterface $appKernel, Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
-        $path  = $appKernel->getProjectDir() . '/public';
-        $path = $this-> getParameter('app.dir.public') . '/img';
+        //$path = $appKernel->getProjectDir() . '/public/img';
+
+        $path = $this->getParameter('app.dir.public') . '/img';
+
         $product = new Product;
         $form = $this->createForm(ProductFormType::class, $product);
 
@@ -42,27 +49,32 @@ class ProductController extends AbstractController
             $product->setSlug($slugger->slug($product->getName()));
 
             $file = $form['img']->getData();
+            $idCategory = $form['category']->getData()->getId();
+            //dd($idCategory);
 
-            if  ($file) {
-                //recup. le nom du fichier sans extension
-                $originalFileName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                $newFileName = $originalFileName . '-' . uniqid() . '.' . $file->guessExtension();
-                //set nom dans la proprieté img
-                $product->setImg($newFileName);
 
-                //Deplacer le fichier dans le repertoire public + sous repertoire
-                try{
-                    
-                    $file->move($path, $newFileName);
-                } catch (FileException $e){
-                    echo $e ->getMessage();
+            if ($file) {
+                // récup nom de fichier sans extension
+                $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+
+                $newFilename = $originalFilename . '-' . uniqid() . '.' . $file->guessExtension();
+                // set nom dans la propriété Img
+                $product->setImg($newFilename);
+
+                //Déplacer le fichier dans le répertoire public + sous répertoire
+                try {
+                    $file->move($path, $newFilename);
+                } catch (FileException $e) {
+                    echo $e->getMessage();
                 }
             }
 
             $em->persist($product);
             $em->flush();
 
-            return $this->redirectToRoute('success');
+            $this->addFlash('success', 'Produit ajouté avec succès');
+
+            return $this->redirectToRoute('categoryProduct', ['id' => $idCategory]);
         }
 
         return $this->render('product/add.html.twig', [
@@ -71,35 +83,46 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route("/product/edit/{id}",name="editProduit")
+     * @Route("/admin/product/edit/{id}",name="editProduit")
      */
     public function editProduct(Request $request, EntityManagerInterface $em, $id): Response
     {
-        $path = $this-> getParameter('app.dir.public') . '/img';
+        $path = $this->getParameter('app.dir.public') . '/img';
+
 
         $product = $em->getRepository(Product::class)->find($id);
+
+
         $form = $this->createForm(ProductFormType::class, $product);
+
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $product = $form->getData();
 
             $file = $form['img']->getData();
+            if ($file) {
+                // récup nom de fichier sans extension
+                $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
 
-            if  ($file) {
-                //recup. le nom du fichier sans extension
-                $originalFileName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                $newFileName = $originalFileName . '-' . uniqid() . '.' . $file->guessExtension();
-                //set nom dans la proprieté img
-                $product->setImg($newFileName);
+                $newFilename = $originalFilename . '-' . uniqid() . '.' . $file->guessExtension();
+                // set nom dans la propriété Img
+                $product->setImg($newFilename);
 
-                //Deplacer le fichier dans le repertoire public + sous repertoire
-                try{
-                    
-                    $file->move($path, $newFileName);
-                } catch (FileException $e){
-                    echo $e ->getMessage();
+                //Déplacer le fichier dans le répertoire public + sous répertoire
+                try {
+                    $file->move($path, $newFilename);
+                } catch (FileException $e) {
+                    echo $e->getMessage();
                 }
             }
+
+
+
+            $em->persist($product);
+            $em->flush();
+            return $this->redirectToRoute('success');
         }
 
         return $this->render('product/edit.html.twig', [
@@ -108,17 +131,22 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route("/product/delete/{id}",name="deleteProduit")
+     * @Route("/admin/product/delete/{id}",name="deleteProduit")
      */
     public function deleteProduct(Product $product, EntityManagerInterface $em)
     {
         // public function deleteProduct(ProductRepository $productRepository, $id, EntityManagerInterface $em)
 
         //$product = $productRepository->find($id);
+        $idCategory = $product->getCategory()->getId(); //comment trouver l'id category ?
+
+
         // paramConverter
         $em->remove($product);
         $em->flush();
 
-        return $this->redirectToRoute('success');
+        $this->addFlash('success', 'Produit effacé avec succès');
+
+        return $this->redirectToRoute('categoryProduct', ['id' => $idCategory]);
     }
 }

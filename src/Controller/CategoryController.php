@@ -15,13 +15,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class CategoryController extends AbstractController
 {
     /**
-     * @Route("/category", name="category")
+     * Liste des catégorie du site
+     * @Route("/admin/category", name="category")
      */
     public function index(CategoryRepository $categoryRepository): Response
     {
-
         $listeCategory = $categoryRepository->findAll();
-
         return $this->render('category/index.html.twig', [
             'listeCategory' => $listeCategory,
         ]);
@@ -29,7 +28,7 @@ class CategoryController extends AbstractController
 
 
     /**
-     * @Route("/categoryProduct/{id}", name="categoryProduct")
+     * @Route("/admin/category/product/{id}", name="categoryProduct")
      */
     public function productByCategory(ProductRepository $productRepository, $id): Response
     {
@@ -46,7 +45,7 @@ class CategoryController extends AbstractController
 
 
     /**
-     * @Route("/category/add",name="ajoutCategory")
+     * @Route("/admin/category/add",name="ajoutCategory")
      */
     public function addCategory(Request $request, EntityManagerInterface $em)
     {
@@ -60,7 +59,9 @@ class CategoryController extends AbstractController
             $em->persist($category);
             $em->flush();
 
-            return $this->redirectToRoute('success');
+            $this->addFlash('success', 'Catégorie ajoutée avec succès');
+
+            return $this->redirectToRoute('category');
         }
 
 
@@ -68,7 +69,7 @@ class CategoryController extends AbstractController
     }
 
     /**
-     * @Route("/category/edit/{id}",name="editCategory")
+     * @Route("/admin/category/edit/{id}",name="editCategory")
      */
     public function editCategory(Request $request, EntityManagerInterface $em, $id)
     {
