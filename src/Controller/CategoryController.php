@@ -49,6 +49,10 @@ class CategoryController extends AbstractController
      */
     public function addCategory(Request $request, EntityManagerInterface $em)
     {
+        //$this->denyAccessUnlessGranted('ROLE-ADMIN');
+
+        //$user = $this->getUser();
+        //dd($user->getRoles());
         $category = new Category;
         $form = $this->createForm(CategoryFormType::class, $category);
 

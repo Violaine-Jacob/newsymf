@@ -11,6 +11,14 @@
             <li class="nav-item active">
                 <a class="nav-link" href="/">Home</a>
             </li>
+
+        {#  -->pour reserver à l'admin
+        {% if is_granted('ROLE_ADMIN') %}
+            <li class="nav-item active">N° HYPER SECRET
+            </li>
+        {% endif %} #}
+
+        {% if app.user %}
             <li class="nav-item">
                 <a class="nav-link" href="{{path('category')}}">Liste catégories</a>
             </li>
@@ -20,19 +28,23 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{path('ajoutCategory')}}">Ajout Categorie</a>
             </li>
+        {% endif %}
+
+
             <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
             <button class="btn btn-outline-success" type="submit">Search</button>
         </ul>
 
             {% if app.user %}
             <div class="d-flex">
-                <button class="btn btn-outline-success" type="submit"> <a href="{{ path('app_logout') }}">Déconnection</button>
+                <a href="{{ path('app_logout') }}">Se déconnecter de {{ app.user.email }}</a>
+                <p class="btn btn-outline-success"> </p>
             </div>
             {% endif %}
-            
-            {% if app.user is null %}
+
+            {% if not app.user %}
             <div class="d-flex">
-                <button class="btn btn-outline-success" type="submit"> <a href="{{ path('app_login') }}">Connection</button>
+            <a href="{{ path('app_login') }}"></a><p class="btn btn-outline-success" > Connection</p>
             </div>
             {% endif %}
         
